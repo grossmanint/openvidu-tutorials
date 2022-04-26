@@ -19,9 +19,14 @@
 </div>
 
 <div *ngIf="session" id="session">
-  <opv-session #ovSessionComponent [sessionName]="mySessionId" [user]="myUserName" [tokens]="tokens"
-    (sessionCreated)="handlerSessionCreatedEvent($event)" (participantCreated)="handlerPublisherCreatedEvent($event)" (error)="handlerErrorEvent($event)">
+  <opv-session #ovSessionComponent [sessionName]="mySessionId" [user]="myUserName" [userId]="myUserId" [tokens]="tokens"
+    (sessionCreated)="handlerSessionCreatedEvent($event)" (publisherCreated)="handlerPublisherCreatedEvent($event)" (error)="handlerErrorEvent($event)">
   </opv-session>
-
+  <button href="#" class="switchcamera"  (click)="toggleCamera1()" >
+      <span class="switch_text">Switch Camera</span>
+  </button>
+  <button href="#" class="switchcamera"  (click)="toggleCamera2()" style="margin-top:10px;">
+      <span class="switch_text">Switch Camera 2</span>
+  </button>
   <!-- <opv-session [sessionName]="mySessionId" [user]="myUserName" [openviduServerUrl]="'https://localhost:4443'" [openviduSecret]="'MY_SECRET'"></opv-session> -->
 </div>
