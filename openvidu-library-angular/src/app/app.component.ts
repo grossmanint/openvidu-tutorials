@@ -3,6 +3,7 @@ import { throwError as observableThrowError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {OpenviduSessionComponent, StreamEvent, Session, UserModel, OpenViduLayout, OvSettings, OpenViduLayoutOptions, SessionDisconnectedEvent, Publisher} from 'openvidu-angular';
+import { OpenVidu } from 'openvidu-browser';
 
 @Component({
   selector: 'app-root',
@@ -35,8 +36,88 @@ export class AppComponent {
     this.tokens.push(token1, token2);
     this.session = true;
   }
+  
+   isFrontCamera = false;
+   hasVideo=false;
+   toggleCamera1() {
+     
+      var OV = new OpenVidu();
+      OV.getDevices().then(devices => {
+		  let videoDevices = devices.filter(device => device.kind === 'videoinput');
+		  if (videoDevices && videoDevices.length > 1){
+			
+			  this.isFrontCamera = !this.isFrontCamera;
+			  let dId=this.isFrontCamera ? videoDevices[0].deviceId :videoDevices[1].deviceId;
+        this.ccam = dId;
+			
+			  OV.getUserMedia({ 
+				  videoSource: dId,
+			  }).then(mediaStream => {
+				var myTrack = mediaStream.getVideoTracks()[0];
+				this.current_publisher.replaceTrack(myTrack)
+					.then(() => console.log('New track has been published'))
+					.catch(function (error){
+            console.log(error.name);
+            switch (error.name){
+              case 'DEVICE_ACCESS_DENIED':
+                console.log('Access denied, trying republishing');
 
+                this.current_session.unpublish(this.current_publisher);
+                this.current_publisher = OV.initPublisher(undefined, {videoSource: dId});
+                this.current_publisher.addVideoElement(document.getElementById('video-element'));
+                break;
+
+            default:
+              console.log(error);
+              break;
+            }
+        });
+				
+			});
+		}
+	});
+}
+
+device1;device2;ccam;
+toggleCamera2() {
+    
+     var OV = new OpenVidu();
+     OV.getDevices().then(devices => {
+     let videoDevices = devices.filter(device => device.kind === 'videoinput');
+     if (videoDevices && videoDevices.length > 1){  
+      
+       this.isFrontCamera = !this.isFrontCamera;
+       let dId=this.isFrontCamera ? videoDevices[0].deviceId :videoDevices[1].deviceId;
+       this.ccam = dId;
+       var newPublisher = OV.initPublisher('html-element-id', { 
+                videoSource: this.isFrontCamera ? videoDevices[1].deviceId : videoDevices[0].deviceId,
+                publishAudio: true,
+                publishVideo: true,
+                mirror: this.isFrontCamera // Setting mirror enable if front camera is selected
+            });
+
+           
+            // Unpublishing the old publisher
+            this.current_session.unpublish(this.current_publisher);//.then(() => {
+                console.log('Old publisher unpublished!');
+
+                // Assigning the new publisher to our global variable 'publisher'
+                this.current_publisher = newPublisher;
+
+                // Publishing the new publisher
+                this.current_session.publish(this.current_publisher).then(() => {
+                    console.log('New publisher published!');
+                });
+            //});
+    }
+  });
+}
+
+  current_session;
+  
   handlerSessionCreatedEvent(session: Session): void {
+    
+    this.current_session=session;
 
     // You can see the session documentation here
     // https://docs.openvidu.io/en/stable/api/openvidu-browser/classes/session.html
@@ -59,9 +140,10 @@ export class AppComponent {
     this.myMethod();
 
   }
-
+ 
+  current_publisher;
   handlerPublisherCreatedEvent(publisher: Publisher) {
-
+    this.current_publisher=publisher;
     // You can see the publisher documentation here
     // https://docs.openvidu.io/en/stable/api/openvidu-browser/classes/publisher.html
 
