@@ -11,8 +11,8 @@ import { OpenVidu } from 'openvidu-browser';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  OPENVIDU_SERVER_URL = 'https://' + location.hostname + ':4443';
-  OPENVIDU_SERVER_SECRET = 'MY_SECRET';
+    OPENVIDU_SERVER_URL = 'https://videoserver.devgmi.com';
+    OPENVIDU_SERVER_SECRET = 'grossopenvidu';
 
   // Join form
   mySessionId = 'SessionA';
